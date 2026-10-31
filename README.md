@@ -51,7 +51,6 @@ Import the generated `dist/*.pbiviz` into Power BI Desktop via
 For live development use `npm start` (runs `pbiviz start`) and add the *Developer visual*
 in Power BI Service.
 
-Before publishing, set your own contact details in `pbiviz.json` (`author.email` is a placeholder).
 
 ## Project layout
 

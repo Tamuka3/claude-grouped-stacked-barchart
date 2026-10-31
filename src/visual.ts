@@ -13,12 +13,13 @@ import IVisualEventService = powerbi.extensibility.IVisualEventService;
 import ISelectionManager = powerbi.extensibility.ISelectionManager;
 import ISelectionId = powerbi.visuals.ISelectionId;
 import ITooltipService = powerbi.extensibility.ITooltipService;
+import ILocalizationManager = powerbi.extensibility.ILocalizationManager;
 import VisualTooltipDataItem = powerbi.extensibility.VisualTooltipDataItem;
 import DataView = powerbi.DataView;
 import DataViewCategoryColumn = powerbi.DataViewCategoryColumn;
 import DataViewValueColumnGroup = powerbi.DataViewValueColumnGroup;
 
-import { VisualFormattingSettingsModel } from "./settings";
+import { localizeEnumItems, VisualFormattingSettingsModel } from "./settings";
 import {
     buildModel, ChartModel, DisplayUnits, formatNumber, formatPercent, ModelInput,
     resolveUnits, Segment, StackMode, toLabel
@@ -33,6 +34,9 @@ interface LaidOutSegment {
     categoryLabel: string;
     groupLabel: string;
     barTotal: number;
+    /** Position in keyboard navigation: bar ordinal across the chart, segment ordinal within the bar. */
+    barOrdinal: number;
+    segOrdinal: number;
     x: number; y: number; width: number; height: number;
 }
 
@@ -75,6 +79,11 @@ export class Visual implements IVisual {
     private events: IVisualEventService;
     private selectionManager: ISelectionManager;
     private tooltipService: ITooltipService;
+    private localization: ILocalizationManager;
+    /** Keyboard focus position, kept across re-renders. */
+    private focusBar = 0;
+    private focusSeg = 0;
+    private laidOut: LaidOutSegment[] = [];
     private formattingSettings: VisualFormattingSettingsModel;
     private formattingSettingsService: FormattingSettingsService;
 
@@ -99,11 +108,17 @@ export class Visual implements IVisual {
         this.events = options.host.eventService;
         this.selectionManager = options.host.createSelectionManager();
         this.tooltipService = options.host.tooltipService;
-        this.formattingSettingsService = new FormattingSettingsService();
+        this.localization = options.host.createLocalizationManager();
+        localizeEnumItems(this.localization);
+        this.formattingSettingsService = new FormattingSettingsService(this.localization);
         this.root = options.element;
 
-        this.svg = select(this.root).append("svg").classed("gsb-chart", true);
-        this.legendG = this.svg.append("g").classed("gsb-legend", true);
+        this.svg = select(this.root).append("svg").classed("gsb-chart", true)
+            .attr("role", "group")
+            .attr("aria-label", this.t("Aria_Chart", "Grouped and stacked bar chart"));
+        this.legendG = this.svg.append("g").classed("gsb-legend", true)
+            .attr("role", "group")
+            .attr("aria-label", this.t("Aria_Legend", "Legend"));
         this.plotG = this.svg.append("g").classed("gsb-plot", true);
         this.gridG = this.plotG.append("g").classed("gsb-grid", true);
         this.valueAxisG = this.plotG.append("g").classed("gsb-value-axis", true);
@@ -112,11 +127,14 @@ export class Visual implements IVisual {
         this.categoryAxisG = this.plotG.append("g").classed("gsb-category-axis", true);
 
         this.landing = select(this.root).append("div").classed("gsb-landing", true);
-        this.landing.append("div").classed("gsb-landing-title", true).text("Grouped & Stacked Bar Chart");
+        this.landing.append("div").classed("gsb-landing-title", true)
+            .text(this.t("Visual_Name", "Grouped & Stacked Bar Chart"));
         const body = this.landing.append("div").classed("gsb-landing-body", true);
         const steps: [string, string][] = [
-            ["Axis", "outer category"], ["Group (clustered)", "bars side by side"],
-            ["Stack (legend)", "segments in each bar"], ["Values", "a measure"]
+            [this.t("Role_Axis", "Axis"), this.t("Landing_Axis", "outer category")],
+            [this.t("Role_Group", "Group (clustered)"), this.t("Landing_Group", "bars side by side")],
+            [this.t("Role_Stack", "Stack (legend)"), this.t("Landing_Stack", "segments in each bar")],
+            [this.t("Role_Values", "Values"), this.t("Landing_Values", "a measure")]
         ];
         steps.forEach(([role, hint]) => {
             const line = body.append("div");
@@ -126,8 +144,8 @@ export class Visual implements IVisual {
 
         // Clicking empty space clears selection.
         this.svg.on("click", (event: MouseEvent) => {
-            if (event.target === this.svg.node() && this.allowInteractions()) {
-                this.selectionManager.clear().then(() => this.applySelectionStyles());
+            if (event.target === this.svg.node()) {
+                this.clearSelection();
             }
         });
         this.svg.on("contextmenu", (event: MouseEvent) => {
@@ -187,9 +205,9 @@ export class Visual implements IVisual {
         const stackSource = valueColumns.source;
         const hasStacks = !!stackSource && !!stackSource.roles && !!stackSource.roles["stack"];
 
-        this.categoryDisplayName = catCol ? catCol.source.displayName : "Axis";
-        this.groupDisplayName = grpCol ? grpCol.source.displayName : "Group";
-        this.stackDisplayName = hasStacks ? stackSource.displayName : "Series";
+        this.categoryDisplayName = catCol ? catCol.source.displayName : this.t("Role_Axis", "Axis");
+        this.groupDisplayName = grpCol ? grpCol.source.displayName : this.t("Role_Group", "Group");
+        this.stackDisplayName = hasStacks ? stackSource.displayName : this.t("Default_Series", "Series");
 
         const rowCount = categories.length > 0 ? categories[0].values.length : 1;
         const groupedValues: DataViewValueColumnGroup[] = valueColumns.grouped();
@@ -414,20 +432,24 @@ export class Visual implements IVisual {
         const totals: { x: number; y: number; text: string; anchor: string; baseline: string }[] = [];
         const groupLabels: { pos: number; size: number; text: string }[] = [];
 
+        let barOrdinal = 0;
         for (const cat of model.categories) {
             const catPos = categoryScale(cat.key);
             for (const bar of cat.bars) {
+                const ordinal = barOrdinal++;
                 const barPos = catPos + groupScale(bar.groupKey);
                 const barSize = groupScale.bandwidth();
-                for (const seg of bar.segments) {
+                bar.segments.forEach((seg, segOrdinal) => {
                     laid.push({
                         segment: seg,
+                        barOrdinal: ordinal,
+                        segOrdinal,
                         categoryLabel: cat.label,
                         groupLabel: bar.groupLabel,
                         barTotal: bar.total,
                         ...toRect(barPos, barSize, seg.start, seg.end)
                     });
-                }
+                });
                 if (showGroupLabels) {
                     groupLabels.push({ pos: barPos, size: barSize, text: bar.groupLabel });
                 }
@@ -465,12 +487,26 @@ export class Visual implements IVisual {
             .attr("fill", d => hc ? palette.background.value : d.segment.color)
             .attr("stroke", hc ? fg : (d => d.width > 3 && d.height > 3 ? "rgba(255,255,255,0.6)" : null))
             .attr("stroke-width", hc ? 2 : 0.5)
+            .attr("role", "option")
+            .attr("aria-label", d => this.segmentAriaLabel(d, percent))
             .on("click", (event: MouseEvent, d) => {
                 event.stopPropagation();
-                if (!this.allowInteractions()) { return; }
-                const multi = event.ctrlKey || event.metaKey || event.shiftKey;
-                this.selectionManager.select(d.segment.selectionId, multi).then(() => this.applySelectionStyles());
+                this.focusBar = d.barOrdinal;
+                this.focusSeg = d.segOrdinal;
+                this.updateTabStops();
+                this.selectSegment(d, event.ctrlKey || event.metaKey || event.shiftKey);
             })
+            .on("keydown", (event: KeyboardEvent, d) => this.onSegmentKeyDown(event, d, horizontal))
+            .on("focus", (event: FocusEvent, d) => {
+                const r = (event.target as Element).getBoundingClientRect();
+                this.tooltipService.show({
+                    coordinates: [r.left + r.width / 2, r.top + r.height / 2],
+                    isTouchEvent: false,
+                    dataItems: this.tooltipItems(d, percent),
+                    identities: [d.segment.selectionId]
+                });
+            })
+            .on("blur", () => this.tooltipService.hide({ immediately: true, isTouchEvent: false }))
             .on("contextmenu", (event: MouseEvent, d) => {
                 this.selectionManager.showContextMenu(d.segment.selectionId, { x: event.clientX, y: event.clientY });
                 event.preventDefault();
@@ -485,6 +521,10 @@ export class Visual implements IVisual {
                 });
             })
             .on("mouseout", () => this.tooltipService.hide({ immediately: false, isTouchEvent: false }));
+
+        this.laidOut = laid;
+        this.barsG.attr("role", "listbox").attr("aria-multiselectable", "true");
+        this.updateTabStops();
 
         // ---- data labels
         this.labelsG.selectAll("*").remove();
@@ -656,12 +696,20 @@ export class Visual implements IVisual {
             .join("g")
             .classed("gsb-legend-item", true)
             .attr("transform", d => `translate(${d.x}, ${4 + d.row * rowHeight})`)
+            .attr("tabindex", 0)
+            .attr("role", "button")
+            .attr("aria-label", d => d.name)
             .on("click", (event: MouseEvent, d) => {
                 event.stopPropagation();
-                if (!this.allowInteractions()) { return; }
-                const multi = event.ctrlKey || event.metaKey || event.shiftKey;
-                this.selectionManager.select(model.series[d.index].selectionId, multi)
-                    .then(() => this.applySelectionStyles());
+                this.selectSeries(d.index, event.ctrlKey || event.metaKey || event.shiftKey);
+            })
+            .on("keydown", (event: KeyboardEvent, d) => {
+                if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    this.selectSeries(d.index, event.ctrlKey || event.metaKey || event.shiftKey);
+                } else if (event.key === "Escape") {
+                    this.clearSelection();
+                }
             });
         g.append("rect")
             .attr("y", (rowHeight - LEGEND_SWATCH) / 2)
@@ -700,15 +748,113 @@ export class Visual implements IVisual {
             color: model.hasStacks ? undefined : d.segment.color
         });
         if (percent) {
-            items.push({ displayName: "% of bar", value: formatPercent(d.segment.displayValue, 1) });
+            items.push({ displayName: this.t("Tooltip_PercentOfBar", "% of bar"), value: formatPercent(d.segment.displayValue, 1) });
         }
         if (model.hasStacks) {
-            items.push({ displayName: "Bar total", value: d.barTotal.toLocaleString() });
+            items.push({ displayName: this.t("Tooltip_BarTotal", "Bar total"), value: d.barTotal.toLocaleString() });
         }
         return items;
     }
 
+    private t(key: string, fallback: string): string {
+        const text = this.localization ? this.localization.getDisplayName(key) : null;
+        return text && text !== key ? text : fallback;
+    }
+
+    private segmentAriaLabel(d: LaidOutSegment, percent: boolean): string {
+        const model = this.model;
+        const parts: string[] = [];
+        if (d.categoryLabel) { parts.push(d.categoryLabel); }
+        if (model.hasGroups) { parts.push(d.groupLabel); }
+        if (model.hasStacks) { parts.push(d.segment.seriesName); }
+        let value = `${model.measureName} ${d.segment.value.toLocaleString()}`;
+        if (percent) {
+            value += ` (${formatPercent(d.segment.displayValue, 1)})`;
+        }
+        return `${parts.join(", ")}: ${value}`;
+    }
+
+    // ------------------------------------------------------------ keyboard
+
+    /** Roving tab index: only the focused segment is in the tab order. */
+    private updateTabStops(): void {
+        const target = this.findSegment(this.focusBar, this.focusSeg) || this.laidOut[0];
+        if (target) {
+            this.focusBar = target.barOrdinal;
+            this.focusSeg = target.segOrdinal;
+        }
+        this.barsG.selectAll<SVGRectElement, LaidOutSegment>("rect.gsb-segment")
+            .attr("tabindex", d => d === target ? 0 : -1);
+    }
+
+    private findSegment(bar: number, seg: number): LaidOutSegment | undefined {
+        const inBar = this.laidOut.filter(d => d.barOrdinal === bar);
+        if (inBar.length === 0) {
+            return undefined;
+        }
+        return inBar[Math.max(0, Math.min(seg, inBar.length - 1))];
+    }
+
+    private onSegmentKeyDown(event: KeyboardEvent, d: LaidOutSegment, horizontal: boolean): void {
+        const lastBar = this.laidOut.length ? this.laidOut[this.laidOut.length - 1].barOrdinal : 0;
+        // Arrows along the category axis move between bars, arrows along the value axis move within a stack.
+        const nextBar = horizontal ? "ArrowDown" : "ArrowRight";
+        const prevBar = horizontal ? "ArrowUp" : "ArrowLeft";
+        const nextSeg = horizontal ? "ArrowRight" : "ArrowUp";
+        const prevSeg = horizontal ? "ArrowLeft" : "ArrowDown";
+
+        let bar = d.barOrdinal;
+        let seg = d.segOrdinal;
+        switch (event.key) {
+            case nextBar: bar = Math.min(lastBar, bar + 1); break;
+            case prevBar: bar = Math.max(0, bar - 1); break;
+            case nextSeg: seg = seg + 1; break;
+            case prevSeg: seg = Math.max(0, seg - 1); break;
+            case "Home": bar = 0; seg = 0; break;
+            case "End": bar = lastBar; seg = 0; break;
+            case "Enter":
+            case " ":
+                event.preventDefault();
+                this.selectSegment(d, event.ctrlKey || event.metaKey || event.shiftKey);
+                return;
+            case "Escape":
+                this.clearSelection();
+                return;
+            default:
+                return;
+        }
+        event.preventDefault();
+        const target = this.findSegment(bar, seg);
+        if (!target) {
+            return;
+        }
+        this.focusBar = target.barOrdinal;
+        this.focusSeg = target.segOrdinal;
+        this.updateTabStops();
+        const node = this.barsG.selectAll<SVGRectElement, LaidOutSegment>("rect.gsb-segment")
+            .filter(x => x === target).node();
+        if (node) {
+            node.focus();
+        }
+    }
+
     // ----------------------------------------------------------- selection
+
+    private selectSegment(d: LaidOutSegment, multi: boolean): void {
+        if (!this.allowInteractions()) { return; }
+        this.selectionManager.select(d.segment.selectionId, multi).then(() => this.applySelectionStyles());
+    }
+
+    private selectSeries(index: number, multi: boolean): void {
+        if (!this.allowInteractions() || !this.model) { return; }
+        this.selectionManager.select(this.model.series[index].selectionId, multi)
+            .then(() => this.applySelectionStyles());
+    }
+
+    private clearSelection(): void {
+        if (!this.allowInteractions()) { return; }
+        this.selectionManager.clear().then(() => this.applySelectionStyles());
+    }
 
     private allowInteractions(): boolean {
         const caps = this.host.hostCapabilities;
@@ -726,6 +872,7 @@ export class Visual implements IVisual {
             selected.some(id => id.equals(seg.selectionId) || id.equals(model.series[seg.seriesIndex].selectionId));
 
         this.barsG.selectAll<SVGRectElement, LaidOutSegment>("rect.gsb-segment")
+            .attr("aria-selected", d => hasSelection && isSelected(d.segment) ? "true" : "false")
             .style("fill-opacity", d => {
                 if (hasSelection) {
                     return isSelected(d.segment) ? 1 : 0.35;
@@ -734,6 +881,8 @@ export class Visual implements IVisual {
             });
 
         this.legendG.selectAll<SVGGElement, { index: number }>("g.gsb-legend-item")
+            .attr("aria-pressed", d => hasSelection && selected.some(id => id.equals(model.series[d.index].selectionId))
+                ? "true" : "false")
             .style("opacity", d => {
                 if (!hasSelection) {
                     return 1;

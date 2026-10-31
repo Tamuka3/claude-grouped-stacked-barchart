@@ -52,3 +52,21 @@ svg.gsb-chart {
         line-height: 1.5;
     }
 }
+
+svg.gsb-chart {
+    .gsb-segment:focus,
+    .gsb-legend-item:focus {
+        outline: none;
+    }
+
+    .gsb-segment:focus-visible {
+        stroke: #252423;
+        stroke-width: 2px;
+        stroke-dasharray: 3 2;
+    }
+
+    .gsb-legend-item:focus-visible rect {
+        stroke: #252423;
+        stroke-width: 2px;
+    }
+}

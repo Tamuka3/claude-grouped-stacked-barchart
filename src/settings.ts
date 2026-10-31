@@ -33,20 +33,21 @@ const displayUnitItems: powerbi.IEnumMember[] = [
 class GeneralCard extends FormattingSettingsCard {
     orientation = new formattingSettings.ItemDropdown({
         name: "orientation",
-        displayName: "Orientation",
+        displayName: "Orientation", displayNameKey: "Orientation",
         items: orientationItems,
         value: orientationItems[0]
     });
 
     stackMode = new formattingSettings.ItemDropdown({
         name: "stackMode",
-        displayName: "Stack mode",
+        displayName: "Stack mode", displayNameKey: "StackMode",
         items: stackModeItems,
         value: stackModeItems[0]
     });
 
     name: string = "general";
     displayName: string = "Chart type";
+    displayNameKey: string = "Card_General";
     slices: Array<FormattingSettingsSlice> = [this.orientation, this.stackMode];
 }
 
@@ -54,13 +55,14 @@ class GeneralCard extends FormattingSettingsCard {
 export class DataPointCard extends FormattingSettingsCard {
     name: string = "dataPoint";
     displayName: string = "Series colors";
+    displayNameKey: string = "Card_Colors";
     slices: Array<FormattingSettingsSlice> = [];
 }
 
 class LayoutCard extends FormattingSettingsCard {
     categoryPadding = new formattingSettings.Slider({
         name: "categoryPadding",
-        displayName: "Space between categories (%)",
+        displayName: "Space between categories (%)", displayNameKey: "CategoryPadding",
         value: 20,
         options: {
             minValue: { type: powerbi.visuals.ValidatorType.Min, value: 0 },
@@ -70,7 +72,7 @@ class LayoutCard extends FormattingSettingsCard {
 
     groupPadding = new formattingSettings.Slider({
         name: "groupPadding",
-        displayName: "Space between bars (%)",
+        displayName: "Space between bars (%)", displayNameKey: "GroupPadding",
         value: 8,
         options: {
             minValue: { type: powerbi.visuals.ValidatorType.Min, value: 0 },
@@ -80,7 +82,7 @@ class LayoutCard extends FormattingSettingsCard {
 
     cornerRadius = new formattingSettings.NumUpDown({
         name: "cornerRadius",
-        displayName: "Bar corner radius (px)",
+        displayName: "Bar corner radius (px)", displayNameKey: "CornerRadius",
         value: 0,
         options: {
             minValue: { type: powerbi.visuals.ValidatorType.Min, value: 0 },
@@ -90,63 +92,66 @@ class LayoutCard extends FormattingSettingsCard {
 
     name: string = "layout";
     displayName: string = "Spacing";
+    displayNameKey: string = "Card_Layout";
     slices: Array<FormattingSettingsSlice> = [this.categoryPadding, this.groupPadding, this.cornerRadius];
 }
 
 class LegendCard extends FormattingSettingsCard {
-    show = new formattingSettings.ToggleSwitch({ name: "show", displayName: "Show", value: true });
+    show = new formattingSettings.ToggleSwitch({ name: "show", displayName: "Show", displayNameKey: "Show", value: true });
 
     position = new formattingSettings.ItemDropdown({
         name: "position",
-        displayName: "Position",
+        displayName: "Position", displayNameKey: "Position",
         items: legendPositionItems,
         value: legendPositionItems[0]
     });
 
-    fontSize = new formattingSettings.NumUpDown({ name: "fontSize", displayName: "Text size", value: 10 });
+    fontSize = new formattingSettings.NumUpDown({ name: "fontSize", displayName: "Text size", displayNameKey: "TextSize", value: 10 });
 
-    color = new formattingSettings.ColorPicker({ name: "color", displayName: "Text color", value: { value: "#605E5C" } });
+    color = new formattingSettings.ColorPicker({ name: "color", displayName: "Text color", displayNameKey: "TextColor", value: { value: "#605E5C" } });
 
     topLevelSlice = this.show;
     name: string = "legend";
     displayName: string = "Legend";
+    displayNameKey: string = "Card_Legend";
     slices: Array<FormattingSettingsSlice> = [this.position, this.fontSize, this.color];
 }
 
 class CategoryAxisCard extends FormattingSettingsCard {
-    show = new formattingSettings.ToggleSwitch({ name: "show", displayName: "Show", value: true });
+    show = new formattingSettings.ToggleSwitch({ name: "show", displayName: "Show", displayNameKey: "Show", value: true });
 
     showGroupLabels = new formattingSettings.ToggleSwitch({
         name: "showGroupLabels",
-        displayName: "Show group labels",
+        displayName: "Show group labels", displayNameKey: "ShowGroupLabels",
         value: true
     });
 
-    fontSize = new formattingSettings.NumUpDown({ name: "fontSize", displayName: "Text size", value: 10 });
+    fontSize = new formattingSettings.NumUpDown({ name: "fontSize", displayName: "Text size", displayNameKey: "TextSize", value: 10 });
 
-    color = new formattingSettings.ColorPicker({ name: "color", displayName: "Text color", value: { value: "#605E5C" } });
+    color = new formattingSettings.ColorPicker({ name: "color", displayName: "Text color", displayNameKey: "TextColor", value: { value: "#605E5C" } });
 
     topLevelSlice = this.show;
     name: string = "categoryAxis";
     displayName: string = "Category axis";
+    displayNameKey: string = "Card_CategoryAxis";
     slices: Array<FormattingSettingsSlice> = [this.showGroupLabels, this.fontSize, this.color];
 }
 
 class ValueAxisCard extends FormattingSettingsCard {
-    show = new formattingSettings.ToggleSwitch({ name: "show", displayName: "Show", value: true });
+    show = new formattingSettings.ToggleSwitch({ name: "show", displayName: "Show", displayNameKey: "Show", value: true });
 
-    gridlines = new formattingSettings.ToggleSwitch({ name: "gridlines", displayName: "Gridlines", value: true });
+    gridlines = new formattingSettings.ToggleSwitch({ name: "gridlines", displayName: "Gridlines", displayNameKey: "Gridlines", value: true });
 
     displayUnits = new formattingSettings.ItemDropdown({
         name: "displayUnits",
-        displayName: "Display units",
+        displayName: "Display units", displayNameKey: "DisplayUnits",
         items: displayUnitItems,
         value: displayUnitItems[0]
     });
 
     decimals = new formattingSettings.NumUpDown({
         name: "decimals",
-        displayName: "Decimal places",
+        displayName: "Decimal places", displayNameKey: "Decimals",
         value: 1,
         options: {
             minValue: { type: powerbi.visuals.ValidatorType.Min, value: 0 },
@@ -154,34 +159,56 @@ class ValueAxisCard extends FormattingSettingsCard {
         }
     });
 
-    fontSize = new formattingSettings.NumUpDown({ name: "fontSize", displayName: "Text size", value: 10 });
+    fontSize = new formattingSettings.NumUpDown({ name: "fontSize", displayName: "Text size", displayNameKey: "TextSize", value: 10 });
 
-    color = new formattingSettings.ColorPicker({ name: "color", displayName: "Text color", value: { value: "#605E5C" } });
+    color = new formattingSettings.ColorPicker({ name: "color", displayName: "Text color", displayNameKey: "TextColor", value: { value: "#605E5C" } });
 
     topLevelSlice = this.show;
     name: string = "valueAxis";
     displayName: string = "Value axis";
+    displayNameKey: string = "Card_ValueAxis";
     slices: Array<FormattingSettingsSlice> = [this.gridlines, this.displayUnits, this.decimals, this.fontSize, this.color];
 }
 
 class DataLabelsCard extends FormattingSettingsCard {
-    show = new formattingSettings.ToggleSwitch({ name: "show", displayName: "Show segment labels", value: false });
+    show = new formattingSettings.ToggleSwitch({ name: "show", displayName: "Show segment labels", displayNameKey: "ShowSegmentLabels", value: false });
 
     showTotals = new formattingSettings.ToggleSwitch({
         name: "showTotals",
-        displayName: "Show bar totals",
+        displayName: "Show bar totals", displayNameKey: "ShowTotals",
         value: false
     });
 
-    fontSize = new formattingSettings.NumUpDown({ name: "fontSize", displayName: "Text size", value: 9 });
+    fontSize = new formattingSettings.NumUpDown({ name: "fontSize", displayName: "Text size", displayNameKey: "TextSize", value: 9 });
 
-    color = new formattingSettings.ColorPicker({ name: "color", displayName: "Segment label color", value: { value: "#FFFFFF" } });
+    color = new formattingSettings.ColorPicker({ name: "color", displayName: "Segment label color", displayNameKey: "SegmentLabelColor", value: { value: "#FFFFFF" } });
 
-    totalColor = new formattingSettings.ColorPicker({ name: "totalColor", displayName: "Total label color", value: { value: "#252423" } });
+    totalColor = new formattingSettings.ColorPicker({ name: "totalColor", displayName: "Total label color", displayNameKey: "TotalLabelColor", value: { value: "#252423" } });
 
     name: string = "dataLabels";
     displayName: string = "Data labels";
+    displayNameKey: string = "Card_DataLabels";
     slices: Array<FormattingSettingsSlice> = [this.show, this.showTotals, this.fontSize, this.color, this.totalColor];
+}
+
+const enumKeys: { [value: string]: string } = {
+    vertical: "Orientation_Vertical", horizontal: "Orientation_Horizontal",
+    stacked: "StackMode_Stacked", percent: "StackMode_Percent",
+    top: "Position_Top", bottom: "Position_Bottom",
+    auto: "Units_Auto", none: "Units_None", thousands: "Units_Thousands", millions: "Units_Millions", billions: "Units_Billions"
+};
+
+/** The formatting-model utils do not localize dropdown items, so we do it here. */
+export function localizeEnumItems(localizationManager: powerbi.extensibility.ILocalizationManager): void {
+    for (const items of [orientationItems, stackModeItems, legendPositionItems, displayUnitItems]) {
+        for (const item of items) {
+            const key = enumKeys[String(item.value)];
+            const text = key && localizationManager.getDisplayName(key);
+            if (text && text !== key) {
+                item.displayName = text;
+            }
+        }
+    }
 }
 
 export class VisualFormattingSettingsModel extends FormattingSettingsModel {

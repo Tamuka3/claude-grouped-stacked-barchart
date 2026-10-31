@@ -4,24 +4,31 @@
             "displayName": "Axis",
             "name": "category",
             "kind": "Grouping",
-            "description": "Outer category on the axis. Each category holds one cluster of bars."
+            "description": "Outer category on the axis. Each category holds one cluster of bars.",
+            "displayNameKey": "Role_Axis",
+            "descriptionKey": "Role_Axis_Desc"
         },
         {
             "displayName": "Group (clustered)",
             "name": "group",
             "kind": "Grouping",
-            "description": "Bars placed side by side inside each axis category."
+            "description": "Bars placed side by side inside each axis category.",
+            "displayNameKey": "Role_Group",
+            "descriptionKey": "Role_Group_Desc"
         },
         {
             "displayName": "Stack (legend)",
             "name": "stack",
             "kind": "Grouping",
-            "description": "Series stacked on top of each other inside every bar."
+            "description": "Series stacked on top of each other inside every bar.",
+            "displayNameKey": "Role_Stack",
+            "descriptionKey": "Role_Stack_Desc"
         },
         {
             "displayName": "Values",
             "name": "values",
-            "kind": "Measure"
+            "kind": "Measure",
+            "displayNameKey": "Role_Values"
         }
     ],
     "dataViewMappings": [
@@ -90,11 +97,13 @@
                         "enumeration": [
                             {
                                 "value": "vertical",
-                                "displayName": "Vertical (columns)"
+                                "displayName": "Vertical (columns)",
+                                "displayNameKey": "Orientation_Vertical"
                             },
                             {
                                 "value": "horizontal",
-                                "displayName": "Horizontal (bars)"
+                                "displayName": "Horizontal (bars)",
+                                "displayNameKey": "Orientation_Horizontal"
                             }
                         ]
                     }
@@ -104,11 +113,13 @@
                         "enumeration": [
                             {
                                 "value": "stacked",
-                                "displayName": "Stacked"
+                                "displayName": "Stacked",
+                                "displayNameKey": "StackMode_Stacked"
                             },
                             {
                                 "value": "percent",
-                                "displayName": "100% stacked"
+                                "displayName": "100% stacked",
+                                "displayNameKey": "StackMode_Percent"
                             }
                         ]
                     }
@@ -159,11 +170,13 @@
                         "enumeration": [
                             {
                                 "value": "top",
-                                "displayName": "Top"
+                                "displayName": "Top",
+                                "displayNameKey": "Position_Top"
                             },
                             {
                                 "value": "bottom",
-                                "displayName": "Bottom"
+                                "displayName": "Bottom",
+                                "displayNameKey": "Position_Bottom"
                             }
                         ]
                     }
@@ -233,23 +246,28 @@
                         "enumeration": [
                             {
                                 "value": "auto",
-                                "displayName": "Auto"
+                                "displayName": "Auto",
+                                "displayNameKey": "Units_Auto"
                             },
                             {
                                 "value": "none",
-                                "displayName": "None"
+                                "displayName": "None",
+                                "displayNameKey": "Units_None"
                             },
                             {
                                 "value": "thousands",
-                                "displayName": "Thousands"
+                                "displayName": "Thousands",
+                                "displayNameKey": "Units_Thousands"
                             },
                             {
                                 "value": "millions",
-                                "displayName": "Millions"
+                                "displayName": "Millions",
+                                "displayNameKey": "Units_Millions"
                             },
                             {
                                 "value": "billions",
-                                "displayName": "Billions"
+                                "displayName": "Billions",
+                                "displayNameKey": "Units_Billions"
                             }
                         ]
                     }
@@ -331,5 +349,6 @@
         "default": {}
     },
     "privileges": [],
-    "supportsMultiVisualSelection": true
+    "supportsMultiVisualSelection": true,
+    "supportsKeyboardFocus": true
 }

@@ -9,6 +9,8 @@ Axis (category)  →  Group (bars side by side)  →  Stack (segments in each ba
 
 Typical use: *Fiscal year* on the axis, *Budget / Actual / Forecast* as groups, *Region* as the stack.
 
+**New to the visual? Start with the [quick start guide](USAGE.md).**
+
 ## Fields
 
 | Field well           | Kind    | Purpose                                            |

@@ -1,0 +1,66 @@
+# Grouped & Stacked Bar Chart — Power BI custom visual
+
+A Power BI custom visual that combines a **clustered** and a **stacked** bar chart:
+each axis category holds several bars side by side, and every bar is itself a stack of series.
+
+```
+Axis (category)  →  Group (bars side by side)  →  Stack (segments in each bar)
+```
+
+Typical use: *Fiscal year* on the axis, *Budget / Actual / Forecast* as groups, *Region* as the stack.
+
+## Fields
+
+| Field well           | Kind    | Purpose                                            |
+| -------------------- | ------- | -------------------------------------------------- |
+| **Axis**             | Grouping | Outer category, one cluster per value              |
+| **Group (clustered)**| Grouping | Bars drawn side by side inside each category       |
+| **Stack (legend)**   | Grouping | Series stacked inside each bar; drives the legend  |
+| **Values**           | Measure  | The number being plotted                           |
+
+Every field is optional except **Values**. Leave *Group* empty for a plain stacked chart or
+*Stack* empty for a plain clustered chart.
+
+## Features
+
+- Vertical (columns) or horizontal (bars) orientation
+- Stacked or 100% stacked mode; negative values stack below zero
+- Two-level category axis (group labels under each bar, category labels beneath) with separators
+- Per-series colors in the format pane (defaults follow the report theme)
+- Segment data labels (shown only when they fit) and bar totals
+- Legend at top or bottom, value axis display units (auto / K / M / bn) and decimals, gridlines
+- Spacing controls for categories and bars, bar corner radius
+- Click / Ctrl+click selection on segments and legend, cross-filtering and cross-highlighting,
+  right-click context menu, Power BI tooltips
+- High-contrast mode support and a landing page when no data is bound
+
+## Build
+
+Requires Node.js 18+.
+
+```bash
+npm install
+npm test          # unit tests for the data model
+npm run lint
+npm run package   # produces dist/*.pbiviz
+```
+
+Import the generated `dist/*.pbiviz` into Power BI Desktop via
+**Visualizations → … → Import a visual from a file**.
+
+For live development use `npm start` (runs `pbiviz start`) and add the *Developer visual*
+in Power BI Service.
+
+Before publishing, set your own contact details in `pbiviz.json` (`author.email` is a placeholder).
+
+## Project layout
+
+```
+capabilities.json   data roles, data-view mapping and format-pane objects
+pbiviz.json         visual metadata
+src/visual.ts       rendering, interaction (D3)
+src/dataModel.ts    data-view-independent model: grouping, stacking, number formatting
+src/settings.ts     format pane model
+style/visual.less   styles
+test/               node:test unit tests for the data model
+```

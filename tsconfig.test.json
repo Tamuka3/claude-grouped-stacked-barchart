@@ -1,0 +1,12 @@
+{
+    "compilerOptions": {
+        "target": "es2022",
+        "module": "commonjs",
+        "moduleResolution": "node",
+        "outDir": "./.tmp/test",
+        "strict": false,
+        "types": ["node"],
+        "lib": ["es2022", "dom"]
+    },
+    "files": ["./test/dataModel.test.ts"]
+}

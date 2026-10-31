@@ -1,0 +1,335 @@
+{
+    "dataRoles": [
+        {
+            "displayName": "Axis",
+            "name": "category",
+            "kind": "Grouping",
+            "description": "Outer category on the axis. Each category holds one cluster of bars."
+        },
+        {
+            "displayName": "Group (clustered)",
+            "name": "group",
+            "kind": "Grouping",
+            "description": "Bars placed side by side inside each axis category."
+        },
+        {
+            "displayName": "Stack (legend)",
+            "name": "stack",
+            "kind": "Grouping",
+            "description": "Series stacked on top of each other inside every bar."
+        },
+        {
+            "displayName": "Values",
+            "name": "values",
+            "kind": "Measure"
+        }
+    ],
+    "dataViewMappings": [
+        {
+            "conditions": [
+                {
+                    "category": {
+                        "max": 1
+                    },
+                    "group": {
+                        "max": 1
+                    },
+                    "stack": {
+                        "max": 1
+                    },
+                    "values": {
+                        "max": 1
+                    }
+                }
+            ],
+            "categorical": {
+                "categories": {
+                    "select": [
+                        {
+                            "bind": {
+                                "to": "category"
+                            }
+                        },
+                        {
+                            "bind": {
+                                "to": "group"
+                            }
+                        }
+                    ],
+                    "dataReductionAlgorithm": {
+                        "top": {
+                            "count": 10000
+                        }
+                    }
+                },
+                "values": {
+                    "group": {
+                        "by": "stack",
+                        "select": [
+                            {
+                                "bind": {
+                                    "to": "values"
+                                }
+                            }
+                        ],
+                        "dataReductionAlgorithm": {
+                            "top": {
+                                "count": 60
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ],
+    "objects": {
+        "general": {
+            "properties": {
+                "orientation": {
+                    "type": {
+                        "enumeration": [
+                            {
+                                "value": "vertical",
+                                "displayName": "Vertical (columns)"
+                            },
+                            {
+                                "value": "horizontal",
+                                "displayName": "Horizontal (bars)"
+                            }
+                        ]
+                    }
+                },
+                "stackMode": {
+                    "type": {
+                        "enumeration": [
+                            {
+                                "value": "stacked",
+                                "displayName": "Stacked"
+                            },
+                            {
+                                "value": "percent",
+                                "displayName": "100% stacked"
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        "dataPoint": {
+            "properties": {
+                "fill": {
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "layout": {
+            "properties": {
+                "categoryPadding": {
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "groupPadding": {
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "cornerRadius": {
+                    "type": {
+                        "numeric": true
+                    }
+                }
+            }
+        },
+        "legend": {
+            "properties": {
+                "show": {
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "position": {
+                    "type": {
+                        "enumeration": [
+                            {
+                                "value": "top",
+                                "displayName": "Top"
+                            },
+                            {
+                                "value": "bottom",
+                                "displayName": "Bottom"
+                            }
+                        ]
+                    }
+                },
+                "fontSize": {
+                    "type": {
+                        "formatting": {
+                            "fontSize": true
+                        }
+                    }
+                },
+                "color": {
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "categoryAxis": {
+            "properties": {
+                "show": {
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "showGroupLabels": {
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "fontSize": {
+                    "type": {
+                        "formatting": {
+                            "fontSize": true
+                        }
+                    }
+                },
+                "color": {
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "valueAxis": {
+            "properties": {
+                "show": {
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "gridlines": {
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "displayUnits": {
+                    "type": {
+                        "enumeration": [
+                            {
+                                "value": "auto",
+                                "displayName": "Auto"
+                            },
+                            {
+                                "value": "none",
+                                "displayName": "None"
+                            },
+                            {
+                                "value": "thousands",
+                                "displayName": "Thousands"
+                            },
+                            {
+                                "value": "millions",
+                                "displayName": "Millions"
+                            },
+                            {
+                                "value": "billions",
+                                "displayName": "Billions"
+                            }
+                        ]
+                    }
+                },
+                "decimals": {
+                    "type": {
+                        "numeric": true
+                    }
+                },
+                "fontSize": {
+                    "type": {
+                        "formatting": {
+                            "fontSize": true
+                        }
+                    }
+                },
+                "color": {
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "dataLabels": {
+            "properties": {
+                "show": {
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "showTotals": {
+                    "type": {
+                        "bool": true
+                    }
+                },
+                "fontSize": {
+                    "type": {
+                        "formatting": {
+                            "fontSize": true
+                        }
+                    }
+                },
+                "color": {
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "totalColor": {
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "tooltips": {
+        "supportedTypes": {
+            "default": true,
+            "canvas": true
+        },
+        "roles": []
+    },
+    "supportsHighlight": true,
+    "supportsLandingPage": true,
+    "supportsEmptyDataView": true,
+    "sorting": {
+        "default": {}
+    },
+    "privileges": [],
+    "supportsMultiVisualSelection": true
+}

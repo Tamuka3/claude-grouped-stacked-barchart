@@ -1,0 +1,26 @@
+{
+    "visual": {
+        "name": "groupedStackedBarChart",
+        "displayName": "Grouped & Stacked Bar Chart",
+        "guid": "groupedStackedBarChart4DB5EC535528409BBE1E5495CE698C03",
+        "visualClassName": "Visual",
+        "version": "1.0.0.0",
+        "description": "Clustered bars where every bar is itself a stack: Axis > Group (side by side) > Stack (legend). Supports vertical/horizontal, 100% stacked, data labels, totals, per-series colors, selection, tooltips and highlighting.",
+        "supportUrl": "https://github.com/tamuka3/claude-grouped-stacked-barchart/issues",
+        "gitHubUrl": "https://github.com/tamuka3/claude-grouped-stacked-barchart"
+    },
+    "apiVersion": "5.11.1",
+    "author": {
+        "name": "tamuka3",
+        "email": "author@example.com"
+    },
+    "assets": {
+        "icon": "assets/icon.png"
+    },
+    "externalJS": null,
+    "style": "style/visual.less",
+    "capabilities": "capabilities.json",
+    "dependencies": null,
+    "stringResources": [],
+    "version": "1.0.0.0"
+}

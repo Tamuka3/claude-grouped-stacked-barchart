@@ -34,7 +34,7 @@ Every field is optional except **Values**. Leave *Group* empty for a plain stack
   right-click context menu, Power BI tooltips
 - High-contrast mode support and a landing page when no data is bound
 - Keyboard navigation (see below) with screen-reader labels
-- Localized into English, French, Spanish and German
+- Localized into English and French
 
 ## Keyboard navigation
 
@@ -53,7 +53,7 @@ Moving focus to a segment shows its tooltip.
 
 ## Localization
 
-Strings live in `stringResources/<locale>/resources.resjson` (en-US, fr-FR, es-ES, de-DE).
+Strings live in `stringResources/<locale>/resources.resjson` (en-US, fr-FR).
 They are generated from `scripts/strings.py`: to add a language, add a column there and to
 `LOCALES`, then run `python3 scripts/strings.py`.
 

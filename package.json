@@ -27,5 +27,9 @@
     "eslint-plugin-powerbi-visuals": "^1.0.0",
     "powerbi-visuals-tools": "^7.2.1",
     "typescript": "5.5.4"
+  },
+  "author": {
+    "name": "Amanda Ilkov",
+    "email": "ailkov@360kids.ca"
   }
 }
